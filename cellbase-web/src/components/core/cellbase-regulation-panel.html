@@ -18,7 +18,7 @@
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
 <link rel="import" href="cellbase-regulation-filter.html">
-<link rel="import" href="cellbase-regulation-view.html">
+<link rel="import" href="cellbase-regulation-grid.html">
 
 <dom-module id="cellbase-regulation-panel">
     <template>
@@ -26,10 +26,10 @@
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-regulation-filter region="{{region}}"></cellbase-regulation-filter>
+                <cellbase-regulation-filter url="{{url}}" cellbase-client="{{cellbaseClient}}"></cellbase-regulation-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-regulation-view cellbase="{{cellbaseClient}}" region="{{region}}"></cellbase-regulation-view>
+                <cellbase-regulation-grid url="{{url}}" prefix="regulationPanel"></cellbase-regulation-grid>
             </div>
         </div>
     </template>
@@ -37,16 +37,15 @@
         Polymer({
             is: 'cellbase-regulation-panel',
             properties: {
-                cellBaseClient: {
+                cellbaseClient: {
                     type: Object
                 },
-                region: {
-                    type: String,
-                    notify: true
+                url: {
+                    type: String
                 }
             },
             ready: function() {
-                this.cellBaseClient = CELLBASE_CLIENT;
+//                this.cellBaseClient = CELLBASE_CLIENT;
             }
         });
     </script>

@@ -23,25 +23,17 @@
 <dom-module id="cellbase-regulation-filter">
     <template>
         <style is="custom-style" include="cellbase-shared-styles">
-            .result-display {
-                max-height: 800px;
-                overflow: auto;
+            .menu-scroll{
+                max-height: 300px;
+                overflow-y: scroll;
             }
         </style>
 
         <div>
-            <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#regulationFilter" role="tab"
-                                                          data-toggle="tab">Filter</a></li>
-                <li role="presentation"><a href="#regulationResult" role="tab" data-toggle="tab">Result</a></li>
-            </ul>
-
-            <!--Filter tab content-->
-            <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="regulationFilter">
-                    <cellbase-filter-toolbar on-clear="clear" on-example="loadExample"
-                                             on-submit="executeQuery"></cellbase-filter-toolbar>
-                    <br>
+            <div>
+                <br>
+                <cellbase-filter-toolbar on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
+                    <br> <br>
 
                     <!--Regulatory region filter menu-->
                     <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -75,8 +67,8 @@
                             </div>
                             <div id="featureType" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="hTwo">
-                                <div class="panel-body">
-                                    <!--<cellbase-options-list cellbase-client={{cellBaseClient}} data-type="biotype" selected={{biotypes}}></cellbase-options-list>-->
+                                <div class="panel-body menu-scroll">
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="featureType" selected={{featureTypes}}></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -93,93 +85,78 @@
                             </div>
                             <div id="featureClass" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="hThree">
-                                <div class="panel-body">
-                                    <!--<textarea id="geneFilterDrugsTextarea" class="form-control clearable" rows="3"></textarea>-->
+                                <div class="panel-body menu-scroll">
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="featureClass" selected={{featureClasses}}></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Result tab content -->
-                <div role="tabpanel" class="tab-pane" id="regulationResult">
-                    <div class="result-display">
-                        <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
-                        <br>
-                        <template is="dom-repeat" items="{{result}}">
-                            <div>
-                                <b on-click="_updateRegulationView" id="{{item.chromosome}}:{{item.start}}-{{item.end}}"
-                                   style="cursor: pointer">{{item.chromosome}}:{{item.start}}-{{item.end}}</b><br>
-                                {{item.name}}
-                                <hr>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </div>
         </div>
     </template>
     <script>
         Polymer({
             is: 'cellbase-regulation-filter',
             properties: {
-                cellBaseClient: {
-                    type: Object,
-                    notify: true
+                cellbaseClient: {
+                    type: Object
                 },
-                region: {
+                url: {
                     type: String,
                     notify: true
                 },
-                result: {
-                    type: Array
+                featureTypes: {
+                    type: Array,
+                    value: []
+                },
+                featureClasses: {
+                    type: Array,
+                    value: []
                 }
             },
-                ready: function () {
-                    this.cellBaseClient = CELLBASE_CLIENT;
-                },
+
                 clear: function (e) {
                     // we empty the textareas
                     this.$.regFilterRegionTextarea.value = "";
 
                 },
                 loadExample: function (e) {
-                    this.$.regFilterRegionTextarea.value = "3:555-66666";
+                    this.$.regFilterRegionTextarea.value = "10:555-66666";
                 },
                 executeQuery: function (e) {
-                    // activate the GIF
-                    $('#spinImg').show();
-
                     // We first build the query params object
-//                let queryParams = {include: "id,name,biotype,chromosome,start,end"};
-//                if (this.biotypes.length > 0) {
-//                    queryParams.biotype = this.biotypes.join(",");
-//                }
-//                if (this.$.geneFilterDrugsTextarea.value != "") {
-//                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
-//                }
+//                    let queryParams = {};
+                    let featureType = [];
+                    let featureClass = [];
+                if (this.featureTypes.length > 0) {
+                    featureType = this.featureTypes.join(",");
+                }
+                if (this.featureClasses.length > 0) {
+                    featureClass = this.featureClasses.join(",");
+                }
 
-                    //
-                    this.result = [];
-                    let _this = this;
-                    let success = function (response) {
-                        for (let i in response.response) {
-                            for (let j in response.response[i].result) {
-                                _this.push('result', response.response[i].result[j]);
-                            }
-                        }
-                        // remove the GIF
-                        $('#spinImg').hide();
-                    };
+//                    let result = [];
+//                    let _this = this;
+//                    let success = function (response) {
+//                        for (let i in response.response) {
+//                            for (let j in response.response[i].result) {
+//                                result.push(response.response[i].result[j]);
+//                            }
+//                        }
+//                        _this.data = result;
+//                    };
+
+                    //TODO add queryParams to the url
 
                     if (this.$.regFilterRegionTextarea.value !== "") {
-                        this.cellBaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', {}, {success: success, async: true});
+                        this.url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.$.regFilterRegionTextarea.value
+                                + '/regulatory?featureType=' + featureType + '&featureClass=' + featureClass;
+
+//                        this.cellbaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', queryParams, {success: success, async: true});
+                        console.log(this.url)
                     }
-                    $('.nav-tabs a[href="#regulationResult"]').tab('show');
-                },
-            _updateRegulationView: function(e) {
-                this.region = e.srcElement.id;
-            }
+                }
             });
     </script>
 </dom-module>
